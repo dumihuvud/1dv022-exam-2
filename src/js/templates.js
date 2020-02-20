@@ -6,10 +6,8 @@ export const alt_ = document.createElement('template')
 
 export const quizForm_ = document.createElement('template')
 quizForm_.innerHTML = `
-<div class="input-field">
   <label for="answer"></label>
   <input type="text" id="answer">
-</div>
 `
 export const template_ = document.createElement('template')
 template_.innerHTML = `
@@ -19,6 +17,7 @@ template_.innerHTML = `
     <p>Start the game:</p>
     <button>Start</button>
   </div>
+  <div class="inputfield"></div>
 </div>
 
 <style>

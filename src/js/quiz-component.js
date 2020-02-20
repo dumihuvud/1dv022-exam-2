@@ -9,12 +9,10 @@ export class QuizGame extends window.HTMLElement {
 
     this._start = this.shadowRoot.querySelector('button')
     this._container = this.shadowRoot.querySelector('.container')
+    this._inputField = this.shadowRoot.querySelector('.inputfield')
 
-    this.id = 0
-    this.message = ''
-    this.nextURL = ''
-    this.question = ''
-    this.alternatives = {}
+    this.questionURL = 'http://vhost3.lnu.se:20080/question/1'
+    this.answerURL = ''
   }
 
   static get observedAttributes () {
@@ -38,56 +36,47 @@ export class QuizGame extends window.HTMLElement {
   }
 
   /**
-   * needs a timer
-   * refactor
+   * Quiz game logic
+   * TODOs:needs a timer
    */
   startQuiz () {
     while (this._container.firstChild) {
       this._container.removeChild(this._container.lastChild)
     }
-    // this._container.appendChild(quizForm_.content.cloneNode(true))
-    // const quizLabel = this.shadowRoot.querySelector('.input-field label')
-    // quizLabel.innerText = `lol${quizLabel}`
-    this._search()
-    this.getResponse()
+    this._search(this.questionURL)
+    // this.sendAnswer(this.answerURL)
   }
 
-  async _search () {
-    // can be updated to `${}`
-    let searchResult = await window.fetch('http://vhost3.lnu.se:20080/question/1')
+  /**
+   * Gets the response from the server
+   * @param {url} questionURL
+   */
+  async _search (questionURL) {
+    let searchResult = await window.fetch(questionURL)
 
-    // gets the response from the server
     searchResult = await searchResult.json()
 
-    // useless code below
-    // this.id = searchResult.id
-    // this.message = searchResult.message
-    // this.nextURL = searchResult.nextURL
-    // this.question = searchResult.question
-    // this.alternatives = searchResult.alternatives
-
-    // console.log(searchResult)
-    // this._updateRendering(this.id, this.message, this.nextURL, this.question)
     this.parser(searchResult)
   }
 
   /**
-   * Parses throgh obj and gets entries and values
+   * Parses throgh obj and gets entries and values. Creates nodes based on values.
    * @param {json Object} searchResult
    */
   parser (searchResult) {
     console.log(searchResult)
     if (!('alternatives' in searchResult)) {
-      console.log('no alternatives')
+      this._inputField.appendChild(quizForm_.content.cloneNode(true))
+      const input = this.shadowRoot.querySelector('#answer')
+      input.addEventListener('onkeypress', event => console.log(input.value))
+      console.log(input)
+      // addEventListener
     }
     for (const [key, value] of Object.entries(searchResult)) {
       switch (key) {
         case 'id':
-          console.log(key)
           break
         case 'message':
-          // message_.innerHTML = `<p>${value}</p>`
-          // this._container.appendChild(message_.content.cloneNode(true))
           break
         case 'question':
           question_.innerHTML = `<p>${value}</p>`
@@ -95,25 +84,27 @@ export class QuizGame extends window.HTMLElement {
           break
         case 'alternatives':
           for (const [key, val] of Object.entries(value)) {
-            // console.log(key)
             alt_.innerHTML = `<button>${val}</button>`
             this._container.appendChild(alt_.content.cloneNode(true))
           }
           break
         case 'nextURL':
-          console.log(key)
+          console.log(value)
+          //   !! figure out !!
+          this.answerURL = value
           break
         default:
-          // console.log('no alternatives')
           break
       }
     }
+    this.sendAnswer(this.answerURL)
   }
 
   /**
    * sends the answer to server and gets response
+   * ${inputVal}
    */
-  async getResponse () {
+  async sendAnswer (inputValue, answerURL) {
     const data = { answer: '2' }
     const settings = {
       method: 'Post',
@@ -124,9 +115,10 @@ export class QuizGame extends window.HTMLElement {
 
     }
     try {
-      const fetchResponse = await window.fetch('http://vhost3.lnu.se:20080/answer/1', settings)
+      const fetchResponse = await window.fetch(inputValue, settings)
       const data = await fetchResponse.json()
-      // console.log(data)
+      console.log(data)
+      return data
     } catch (error) {
       console.log(error)
       return error
