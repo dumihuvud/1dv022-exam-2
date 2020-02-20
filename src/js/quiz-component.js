@@ -45,6 +45,7 @@ export class QuizGame extends window.HTMLElement {
     }
     this._search(this.questionURL)
     // this.sendAnswer(this.answerURL)
+    // this.test()
   }
 
   /**
@@ -65,12 +66,17 @@ export class QuizGame extends window.HTMLElement {
    */
   parser (searchResult) {
     console.log(searchResult)
+    const inputValue = ''
     if (!('alternatives' in searchResult)) {
       this._inputField.appendChild(quizForm_.content.cloneNode(true))
       const input = this.shadowRoot.querySelector('#answer')
-      input.addEventListener('onkeypress', event => console.log(input.value))
-      console.log(input)
-      // addEventListener
+      input.addEventListener('keydown', event => {
+        inputValue = input.value + String.fromCharCode(event.which)
+        if (event.keyCode === 13) {
+          console.log(inputValue)
+          return inputValue
+        }
+      })
     }
     for (const [key, value] of Object.entries(searchResult)) {
       switch (key) {
@@ -97,7 +103,7 @@ export class QuizGame extends window.HTMLElement {
           break
       }
     }
-    this.sendAnswer(this.answerURL)
+    this.sendAnswer(inputValue, this.answerURL)
   }
 
   /**
@@ -105,7 +111,7 @@ export class QuizGame extends window.HTMLElement {
    * ${inputVal}
    */
   async sendAnswer (inputValue, answerURL) {
-    const data = { answer: '2' }
+    const data = { answer: inputValue }
     const settings = {
       method: 'Post',
       headers: {
@@ -115,7 +121,7 @@ export class QuizGame extends window.HTMLElement {
 
     }
     try {
-      const fetchResponse = await window.fetch(inputValue, settings)
+      const fetchResponse = await window.fetch(answerURL, settings)
       const data = await fetchResponse.json()
       console.log(data)
       return data
@@ -133,6 +139,17 @@ export class QuizGame extends window.HTMLElement {
   _timer () {
     // todo: timer to use in startQuiz()
   }
+
+  // test () {
+  //   this._inputField.appendChild(quizForm_.content.cloneNode(true))
+  //   const input = this.shadowRoot.querySelector('#answer')
+  //   input.addEventListener('keypress', event => {
+  //     const inputValue = input.value + String.fromCharCode(event.which)
+  //     if (event.keyCode === 13) {
+  //       console.log(inputValue)
+  //     }
+  //   })
+  // }
 }
 
 window.customElements.define('x-quiz-game', QuizGame)

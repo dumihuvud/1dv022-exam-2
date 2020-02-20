@@ -6,7 +6,6 @@ export const alt_ = document.createElement('template')
 
 export const quizForm_ = document.createElement('template')
 quizForm_.innerHTML = `
-  <label for="answer"></label>
   <input type="text" id="answer">
 `
 export const template_ = document.createElement('template')
@@ -31,3 +30,5 @@ template_.innerHTML = `
 }
 </style>
 `
+
+//   <label for="answer"></label>
