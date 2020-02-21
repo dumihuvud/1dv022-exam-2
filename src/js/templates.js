@@ -12,7 +12,7 @@ export const template_ = document.createElement('template')
 template_.innerHTML = `
 <div class="start">
 <h4><b>The quiz game</b></h4>
-  <div class="container">  
+  <div class="container">
     <p>Start the game:</p>
     <button>Start</button>
   </div>
@@ -32,3 +32,4 @@ template_.innerHTML = `
 `
 
 //   <label for="answer"></label>
+// add div invisible
