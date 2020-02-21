@@ -1,8 +1,13 @@
-export const message_ = document.createElement('template')
+export const messageResponse_ = document.createElement('template')
 
 export const question_ = document.createElement('template')
 
 export const alt_ = document.createElement('template')
+
+export const nextBtn_ = document.createElement('template')
+nextBtn_.innerHTML = `
+<button id="next">Next</button>
+`
 
 export const quizForm_ = document.createElement('template')
 quizForm_.innerHTML = `
@@ -14,7 +19,7 @@ template_.innerHTML = `
 <h4><b>The quiz game</b></h4>
   <div class="container">
     <p>Start the game:</p>
-    <button>Start</button>
+    <button id="start">Start</button>
   </div>
   <div class="inputfield"></div>
 </div>

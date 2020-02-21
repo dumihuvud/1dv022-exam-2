@@ -1,4 +1,4 @@
-import { message_, question_, alt_, quizForm_, template_ } from './templates.js'
+import { messageResponse_, question_, alt_, quizForm_, template_ } from './templates.js'
 
 export class Test extends window.HTMLElement {
   constructor () {
@@ -159,10 +159,6 @@ export class Test extends window.HTMLElement {
         console.log(inputValue)
       }
     })
-  }
-
-  _timer () {
-    // todo: timer to use in startQuiz()
   }
 }
 
