@@ -4,14 +4,19 @@ export const question_ = document.createElement('template')
 
 export const alt_ = document.createElement('template')
 
-export const nextBtn_ = document.createElement('template')
-nextBtn_.innerHTML = `
-<button id="next">Next</button>
+export const answerBtn_ = document.createElement('template')
+answerBtn_.innerHTML = `
+<button id="answerBtn">Answer</button>
+`
+
+export const nextQ_ = document.createElement('template')
+answerBtn_.innerHTML = `
+<button id="nextQ">Next</button>
 `
 
 export const quizForm_ = document.createElement('template')
 quizForm_.innerHTML = `
-  <input type="text" id="answer">
+  <input type="text" id="quizForm">
 `
 export const template_ = document.createElement('template')
 template_.innerHTML = `

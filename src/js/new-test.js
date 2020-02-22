@@ -1,4 +1,4 @@
-import { messageResponse_, question_, alt_, quizForm_, template_, nextBtn_ } from './templates.js'
+import { messageResponse_, question_, alt_, quizForm_, template_, answerBtn_ } from './templates.js'
 
 export class NewTest extends window.HTMLElement {
   constructor () {
@@ -77,13 +77,13 @@ export class NewTest extends window.HTMLElement {
 
   async _renderResult () {
     const pTag = document.createElement('p')
-    this._container.appendChild(nextBtn_.content.cloneNode(true))
-    const nextBtn = this.shadowRoot.querySelector('#next')
+    this._container.appendChild(answerBtn_.content.cloneNode(true))
+    const answerBtn = this.shadowRoot.querySelector('#answerBtn')
     pTag.innerText = await this.parsedResponse.message
     this._container.appendChild(pTag)
 
-    nextBtn.addEventListener('click', async event => {
-      console.log(this.parsedResponse.nextURL + ' =nextBtn')
+    answerBtn.addEventListener('click', async event => {
+      console.log(this.parsedResponse.nextURL + ' =answerBtn')
       this.questionURL = this.parsedResponse.nextURL
       await this._searchQuestion(this.questionURL)
     })
