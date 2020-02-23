@@ -50,13 +50,10 @@ export class QuizGame extends window.HTMLElement {
    * @param {object} question
    */
   _renderQuestion (obj, url) {
-    while (this._container.firstChild) {
-      this._container.removeChild(this._container.lastChild)
-    }
+    this._removeNodes()
     let answerValue = ''
     question_.innerHTML = `<p id="questionPTag">${obj.question}</p>`
     this._container.appendChild(question_.content.cloneNode(true))
-    this._container.appendChild(answerBtn_.content.cloneNode(true))
 
     if (obj.alternatives) {
       for (const [key, val] of Object.entries(obj.alternatives)) {
@@ -64,8 +61,10 @@ export class QuizGame extends window.HTMLElement {
         this._container.appendChild(alt_.content.cloneNode(true))
       }
       this._container.addEventListener('click', event => {
-        answerValue = event.target.id
-        console.log(answerValue)
+        if (event.target.id === 'alt1' || event.target.id === 'alt2' || event.target.id === 'alt3' || event.target.id === 'alt4') {
+          answerValue = event.target.id
+          console.log(answerValue)
+        }
       })
     } else {
       this._container.appendChild(quizForm_.content.cloneNode(true))
@@ -74,6 +73,7 @@ export class QuizGame extends window.HTMLElement {
         answerValue = input.value
       })
     }
+    this._container.appendChild(answerBtn_.content.cloneNode(true))
     const answerBTN = this.shadowRoot.querySelector('#answerBtn')
     answerBTN.addEventListener('click', event => {
       this._postAnswer(answerValue, url)
@@ -85,14 +85,21 @@ export class QuizGame extends window.HTMLElement {
    * @param {object} data
    */
   _renderAnswer (data) {
-    this._removeNodes()
-    console.log(data)
-    messageResponse_.innerHTML = `<p>${data.message}</p>`
-    this._container.appendChild(messageResponse_.content.cloneNode(true))
-    this._container.appendChild(nextQBtn_.content.cloneNode(true))
-    this.shadowRoot.querySelector('#nextQBtn').addEventListener('click', event => {
-      this._getNextQuestion(data.nextURL)
-    })
+    if (!data.nextURL) {
+      this._removeNodes()
+      const won = document.createElement('p')
+      won.innerText = 'You won'
+      this._container.appendChild(won)
+    } else {
+      this._removeNodes()
+      console.log(data)
+      messageResponse_.innerHTML = `<p>${data.message}</p>`
+      this._container.appendChild(messageResponse_.content.cloneNode(true))
+      this._container.appendChild(nextQBtn_.content.cloneNode(true))
+      this.shadowRoot.querySelector('#nextQBtn').addEventListener('click', event => {
+        this._getNextQuestion(data.nextURL)
+      })
+    }
   }
 
   _removeNodes () {
