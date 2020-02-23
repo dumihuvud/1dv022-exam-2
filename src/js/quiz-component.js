@@ -8,7 +8,6 @@ export class QuizGame extends window.HTMLElement {
     this.shadowRoot.appendChild(template_.content.cloneNode(true))
 
     this._container = this.shadowRoot.querySelector('.container')
-    this._altBtns = this.shadowRoot.querySelector('.altBtns')
     this._startBtn = this.shadowRoot.querySelector('#start')
   }
 
@@ -35,40 +34,24 @@ export class QuizGame extends window.HTMLElement {
     this._renderQuestion(nextQuestion)
   }
 
-  _renderQuestion (question) {
+  _renderQuestion (firstQuestion) {
     while (this._container.firstChild) {
       this._container.removeChild(this._container.lastChild)
     }
-    question_.innerHTML = `<p id="questionPTag">${question.question}</p>`
+    question_.innerHTML = `<p id="questionPTag">${firstQuestion.question}</p>`
     this._container.appendChild(question_.content.cloneNode(true))
-    if (!('alternatives' in question)) {
-      this._container.appendChild(quizForm_.content.cloneNode(true))
-      const input = this.shadowRoot.querySelector('#quizForm')
-      input.addEventListener('keydown', event => {
-        if (event.key === 'Enter') {
-          const answerValue = input.value
-          const nextURL = question.nextURL
-          console.log(answerValue)
-          console.log(nextURL)
-          this._postAnswer(answerValue, nextURL)
-        }
-      })
-    } else {
-      console.log('alternatives')
-      for (const [key, val] of Object.entries(question.alternatives)) {
-        alt_.innerHTML = `<button value="${key}">${val}</button>`
-        this._altBtns.appendChild(alt_.content.cloneNode(true))
-      }
-      this._altBtns.addEventListener('click', event => {
-        console.log(event.target)
-        const answerValue = event.target.value
-        const nextURL = question.nextURL
+    this._container.appendChild(quizForm_.content.cloneNode(true))
+
+    const input = this.shadowRoot.querySelector('#quizForm')
+    input.addEventListener('keydown', event => {
+      if (event.key === 'Enter') {
+        const answerValue = input.value
+        const nextURL = firstQuestion.nextURL
+        console.log(answerValue)
+        console.log(nextURL)
         this._postAnswer(answerValue, nextURL)
-        while (this._container.firstChild) {
-          this._altBtns.removeChild(this._altBtns.lastChild)
-        }
-      })
-    }
+      }
+    })
   }
 
   _renderAnswer (data) {

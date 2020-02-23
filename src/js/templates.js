@@ -40,6 +40,3 @@ template_.innerHTML = `
 }
 </style>
 `
-
-//   <label for="answer"></label>
-// add div invisible
