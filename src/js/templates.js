@@ -9,9 +9,9 @@ answerBtn_.innerHTML = `
 <button id="answerBtn">Answer</button>
 `
 
-export const nextQ_ = document.createElement('template')
-answerBtn_.innerHTML = `
-<button id="nextQ">Next</button>
+export const nextQBtn_ = document.createElement('template')
+nextQBtn_.innerHTML = `
+<button id="nextQBtn">Next</button>
 `
 
 export const quizForm_ = document.createElement('template')

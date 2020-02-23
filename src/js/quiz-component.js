@@ -1,4 +1,4 @@
-import { messageResponse_, question_, alt_, nextQ_, quizForm_, template_ } from './templates.js'
+import { messageResponse_, question_, alt_, nextQBtn_, quizForm_, template_ } from './templates.js'
 
 export class QuizGame extends window.HTMLElement {
   constructor () {
@@ -7,57 +7,55 @@ export class QuizGame extends window.HTMLElement {
     this.attachShadow({ mode: 'open' })
     this.shadowRoot.appendChild(template_.content.cloneNode(true))
 
-    this.questionURL = 'http://vhost3.lnu.se:20080/question/1'
-    this.answerURL = 'http://vhost3.lnu.se:20080/answer/1'
-
     this._container = this.shadowRoot.querySelector('.container')
     this._startBtn = this.shadowRoot.querySelector('#start')
-
-    this.searchResult = {}
   }
 
+  /**
+   * onclick <start> gets the question
+   */
   connectedCallback () {
     this._startBtn.addEventListener('click', event => {
-      this._getQuestion(this.questionURL)
+      this._getFirstQuestion()
     })
   }
 
-  async _getQuestion (questionURL) {
-    let searchResult = await window.fetch(questionURL)
-    searchResult = await searchResult.json()
-    console.log(searchResult)
-    this.searchResult = searchResult
-    this._renderGET(this.searchResult)
+  async _getFirstQuestion () {
+    let firstQuestion = await window.fetch('http://vhost3.lnu.se:20080/question/1')
+    firstQuestion = await firstQuestion.json()
+    console.log(firstQuestion)
+    this._renderQuestion(firstQuestion)
   }
 
-  _renderGET (searchResult) {
+  async _getNextQuestion (nextURL) {
+    let nextQuestion = await window.fetch(nextURL)
+    nextQuestion = await nextQuestion.json()
+    console.log(nextQuestion)
+    this._renderQuestion(nextQuestion)
+  }
+
+  _renderQuestion (firstQuestion) {
     while (this._container.firstChild) {
       this._container.removeChild(this._container.lastChild)
     }
-
-    question_.innerHTML = `<p id="questionPTag">${searchResult.question}</p>`
+    question_.innerHTML = `<p id="questionPTag">${firstQuestion.question}</p>`
     this._container.appendChild(question_.content.cloneNode(true))
     this._container.appendChild(quizForm_.content.cloneNode(true))
 
-    this._inputVal()
-  }
-
-  _inputVal () {
     const input = this.shadowRoot.querySelector('#quizForm')
     input.addEventListener('keydown', event => {
       if (event.key === 'Enter') {
-        const valToSend = input.value
+        const answerValue = input.value
+        const nextURL = firstQuestion.nextURL
+        console.log(answerValue)
+        console.log(nextURL)
+        this._postAnswer(answerValue, nextURL)
       }
     })
-    this._postAnswer()
   }
 
-  _renderPOST () {
-
-  }
-
-  async _postAnswer () {
-    const data = { answer: '2' }
+  async _postAnswer (answerValue, nextURL) {
+    const data = { answer: answerValue }
     const settings = {
       method: 'Post',
       headers: {
@@ -67,10 +65,10 @@ export class QuizGame extends window.HTMLElement {
 
     }
     try {
-      const postResponse = await window.fetch(this.answerURL, settings)
+      const postResponse = await window.fetch(nextURL, settings)
       const getData = await postResponse.json()
       console.log(getData)
-      this.parsedResponse = getData
+      this._getNextQuestion(getData.nextURL)
       return getData
     } catch (error) {
       console.log(error)
