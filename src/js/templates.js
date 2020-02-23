@@ -26,7 +26,7 @@ template_.innerHTML = `
     <p>Start the game:</p>
     <button id="start">Start</button>
   </div>
-  <div class="inputfield"></div>
+  <div class="altBtns"></div>
 </div>
 
 <style>
