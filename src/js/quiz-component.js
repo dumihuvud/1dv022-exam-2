@@ -19,7 +19,8 @@ export class QuizGame extends window.HTMLElement {
    */
   connectedCallback () {
     this._startBtn.addEventListener('click', event => {
-      this._getFirstQuestion(this.nextURL)
+      this._getQuestion(this.nextURL)
+      this._setTimer()
     })
   }
 
@@ -27,7 +28,7 @@ export class QuizGame extends window.HTMLElement {
    * Gets json URL link and sends it for rendering.
    * @param {string} nextURL
    */
-  async _getFirstQuestion (nextURL) {
+  async _getQuestion (nextURL) {
     let firstQuestion = await window.fetch(nextURL)
     firstQuestion = await firstQuestion.json()
     const obj = firstQuestion
@@ -41,6 +42,7 @@ export class QuizGame extends window.HTMLElement {
    */
   _renderQuestion (obj, url) {
     this._removeNodes()
+    this._setTimer()
     let answerValue = ''
     question_.innerHTML = `<p id="questionPTag">${obj.question}</p>`
     this._container.appendChild(question_.content.cloneNode(true))
@@ -87,15 +89,51 @@ export class QuizGame extends window.HTMLElement {
       this._container.appendChild(messageResponse_.content.cloneNode(true))
       this._container.appendChild(nextQBtn_.content.cloneNode(true))
       this.shadowRoot.querySelector('#nextQBtn').addEventListener('click', event => {
-        this._getFirstQuestion(data.nextURL)
+        this._getQuestion(data.nextURL)
       })
     }
   }
 
+  /**
+   * Helper function.
+   * Removes nodes in div
+   */
   _removeNodes () {
     while (this._container.firstChild) {
       this._container.removeChild(this._container.lastChild)
     }
+  }
+
+  /**
+   * The timer
+   */
+  _setTimer () {
+    console.log('timer')
+    const prog = document.createElement('progress')
+    prog.setAttribute('value', 5)
+    prog.setAttribute('max', 5)
+    this._container.appendChild(prog)
+    let timesLeft = 5
+    const interval = setInterval(() => {
+      timesLeft--
+      if (timesLeft <= 0) {
+        clearInterval(interval)
+        this._timeIsUp()
+      } else {
+        prog.value = timesLeft
+      }
+      console.log(timesLeft)
+    }, 1000)
+  }
+
+  /**
+   *  Callback for timer
+   */
+  _timeIsUp () {
+    const timeUp = document.createElement('p')
+    timeUp.innerText = 'Time is up. Try again!'
+    this._removeNodes()
+    this._container.appendChild(timeUp)
   }
 
   /**

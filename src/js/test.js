@@ -111,3 +111,30 @@ export class Test extends window.HTMLElement {
 }
 
 window.customElements.define('x-test', Test)
+
+// _timeIsUp () {
+//   const timeUp = document.createElement('p')
+//   timeUp.innerText = 'Time is up. Try again!'
+//   this._removeNodes()
+//   this._container.appendChild(timeUp)
+// }
+
+// _setTimer () {
+//   console.log('timer')
+//   const prog = document.createElement('progress')
+//   prog.setAttribute('value', '0')
+//   prog.setAttribute('max', 100)
+//   this._container.appendChild(prog)
+//   let start = 0
+//   const interval = setInterval(() => {
+//     if (start > 100) {
+//       clearInterval(interval)
+//       this._timeIsUp()
+//     } else {
+//       prog.value = start
+//     }
+
+//     start++
+//     console.log(start)
+//   }, 1000)
+// }
