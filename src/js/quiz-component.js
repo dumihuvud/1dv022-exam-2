@@ -20,6 +20,9 @@ export class QuizGame extends window.HTMLElement {
     })
   }
 
+  /**
+   * Gets the first question from the server and sends json data for rendering.
+   */
   async _getFirstQuestion () {
     let firstQuestion = await window.fetch('http://vhost3.lnu.se:20080/question/1')
     firstQuestion = await firstQuestion.json()
@@ -27,6 +30,10 @@ export class QuizGame extends window.HTMLElement {
     this._renderQuestion(firstQuestion)
   }
 
+  /**
+   * Gets json URL link and sends it for rendering.
+   * @param {string} nextURL
+   */
   async _getNextQuestion (nextURL) {
     let nextQuestion = await window.fetch(nextURL)
     nextQuestion = await nextQuestion.json()
@@ -34,6 +41,10 @@ export class QuizGame extends window.HTMLElement {
     this._renderQuestion(nextQuestion)
   }
 
+  /**
+   * Renders json obj and creates DOM nodes of it
+   * @param {object} firstQuestion
+   */
   _renderQuestion (firstQuestion) {
     while (this._container.firstChild) {
       this._container.removeChild(this._container.lastChild)
@@ -54,6 +65,10 @@ export class QuizGame extends window.HTMLElement {
     })
   }
 
+  /**
+   * Gets response from server and creates DOM with answer
+   * @param {object} data
+   */
   _renderAnswer (data) {
     while (this._container.firstChild) {
       this._container.removeChild(this._container.lastChild)
@@ -67,6 +82,11 @@ export class QuizGame extends window.HTMLElement {
     })
   }
 
+  /**
+   * Gets answer and URL values from _renderAnswer() and post it.
+   * @param {string} answerValue
+   * @param {string} nextURL
+   */
   async _postAnswer (answerValue, nextURL) {
     const data = { answer: answerValue }
     const settings = {
