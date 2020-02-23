@@ -10,6 +10,8 @@ export class QuizGame extends window.HTMLElement {
     this._container = this.shadowRoot.querySelector('.container')
     this._startBtn = this.shadowRoot.querySelector('#start')
     this._altDiv = this.shadowRoot.querySelector('.altBtns')
+
+    this.nextURL = 'http://vhost3.lnu.se:20080/question/1'
   }
 
   /**
@@ -17,31 +19,19 @@ export class QuizGame extends window.HTMLElement {
    */
   connectedCallback () {
     this._startBtn.addEventListener('click', event => {
-      this._getFirstQuestion()
+      this._getFirstQuestion(this.nextURL)
     })
-  }
-
-  /**
-   * Gets the first question from the server and sends json data for rendering.
-   */
-  async _getFirstQuestion () {
-    let firstQuestion = await window.fetch('http://vhost3.lnu.se:20080/question/1')
-    firstQuestion = await firstQuestion.json()
-    const obj = firstQuestion
-    const url = firstQuestion.nextURL
-    this._renderQuestion(obj, url)
   }
 
   /**
    * Gets json URL link and sends it for rendering.
    * @param {string} nextURL
    */
-  async _getNextQuestion (nextURL) {
-    let nextQuestion = await window.fetch(nextURL)
-    nextQuestion = await nextQuestion.json()
-    console.log(nextQuestion)
-    const obj = nextQuestion
-    const url = nextQuestion.nextURL
+  async _getFirstQuestion (nextURL) {
+    let firstQuestion = await window.fetch(nextURL)
+    firstQuestion = await firstQuestion.json()
+    const obj = firstQuestion
+    const url = firstQuestion.nextURL
     this._renderQuestion(obj, url)
   }
 
@@ -97,7 +87,7 @@ export class QuizGame extends window.HTMLElement {
       this._container.appendChild(messageResponse_.content.cloneNode(true))
       this._container.appendChild(nextQBtn_.content.cloneNode(true))
       this.shadowRoot.querySelector('#nextQBtn').addEventListener('click', event => {
-        this._getNextQuestion(data.nextURL)
+        this._getFirstQuestion(data.nextURL)
       })
     }
   }
