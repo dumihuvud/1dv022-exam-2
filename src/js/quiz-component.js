@@ -1,4 +1,4 @@
-import { messageResponse_, question_, alt_, nextQBtn_, quizForm_, template_ } from './templates.js'
+import { messageResponse_, question_, alt_, nextQBtn_, quizForm_, template_, answerBtn_ } from './templates.js'
 
 export class QuizGame extends window.HTMLElement {
   constructor () {
@@ -9,6 +9,7 @@ export class QuizGame extends window.HTMLElement {
 
     this._container = this.shadowRoot.querySelector('.container')
     this._startBtn = this.shadowRoot.querySelector('#start')
+    this._altDiv = this.shadowRoot.querySelector('.altBtns')
   }
 
   /**
@@ -26,8 +27,9 @@ export class QuizGame extends window.HTMLElement {
   async _getFirstQuestion () {
     let firstQuestion = await window.fetch('http://vhost3.lnu.se:20080/question/1')
     firstQuestion = await firstQuestion.json()
-    console.log(firstQuestion)
-    this._renderQuestion(firstQuestion)
+    const obj = firstQuestion
+    const url = firstQuestion.nextURL
+    this._renderQuestion(obj, url)
   }
 
   /**
@@ -38,30 +40,43 @@ export class QuizGame extends window.HTMLElement {
     let nextQuestion = await window.fetch(nextURL)
     nextQuestion = await nextQuestion.json()
     console.log(nextQuestion)
-    this._renderQuestion(nextQuestion)
+    const obj = nextQuestion
+    const url = nextQuestion.nextURL
+    this._renderQuestion(obj, url)
   }
 
   /**
    * Renders json obj and creates DOM nodes of it
-   * @param {object} firstQuestion
+   * @param {object} question
    */
-  _renderQuestion (firstQuestion) {
+  _renderQuestion (obj, url) {
     while (this._container.firstChild) {
       this._container.removeChild(this._container.lastChild)
     }
-    question_.innerHTML = `<p id="questionPTag">${firstQuestion.question}</p>`
+    let answerValue = ''
+    question_.innerHTML = `<p id="questionPTag">${obj.question}</p>`
     this._container.appendChild(question_.content.cloneNode(true))
-    this._container.appendChild(quizForm_.content.cloneNode(true))
+    this._container.appendChild(answerBtn_.content.cloneNode(true))
 
-    const input = this.shadowRoot.querySelector('#quizForm')
-    input.addEventListener('keydown', event => {
-      if (event.key === 'Enter') {
-        const answerValue = input.value
-        const nextURL = firstQuestion.nextURL
-        console.log(answerValue)
-        console.log(nextURL)
-        this._postAnswer(answerValue, nextURL)
+    if (obj.alternatives) {
+      for (const [key, val] of Object.entries(obj.alternatives)) {
+        alt_.innerHTML = `<button id="${key}">${val}</button>`
+        this._container.appendChild(alt_.content.cloneNode(true))
       }
+      this._container.addEventListener('click', event => {
+        answerValue = event.target.id
+        console.log(answerValue)
+      })
+    } else {
+      this._container.appendChild(quizForm_.content.cloneNode(true))
+      const input = this.shadowRoot.querySelector('#quizForm')
+      input.addEventListener('input', event => {
+        answerValue = input.value
+      })
+    }
+    const answerBTN = this.shadowRoot.querySelector('#answerBtn')
+    answerBTN.addEventListener('click', event => {
+      this._postAnswer(answerValue, url)
     })
   }
 
@@ -70,9 +85,7 @@ export class QuizGame extends window.HTMLElement {
    * @param {object} data
    */
   _renderAnswer (data) {
-    while (this._container.firstChild) {
-      this._container.removeChild(this._container.lastChild)
-    }
+    this._removeNodes()
     console.log(data)
     messageResponse_.innerHTML = `<p>${data.message}</p>`
     this._container.appendChild(messageResponse_.content.cloneNode(true))
@@ -80,6 +93,12 @@ export class QuizGame extends window.HTMLElement {
     this.shadowRoot.querySelector('#nextQBtn').addEventListener('click', event => {
       this._getNextQuestion(data.nextURL)
     })
+  }
+
+  _removeNodes () {
+    while (this._container.firstChild) {
+      this._container.removeChild(this._container.lastChild)
+    }
   }
 
   /**
