@@ -20,7 +20,6 @@ export class QuizGame extends window.HTMLElement {
   connectedCallback () {
     this._startBtn.addEventListener('click', event => {
       this._getQuestion(this.nextURL)
-      this._setTimer()
     })
   }
 
@@ -42,7 +41,8 @@ export class QuizGame extends window.HTMLElement {
    */
   _renderQuestion (obj, url) {
     this._removeNodes()
-    this._setTimer()
+    // this._setTimer()
+    this.test()
     let answerValue = ''
     question_.innerHTML = `<p id="questionPTag">${obj.question}</p>`
     this._container.appendChild(question_.content.cloneNode(true))
@@ -109,16 +109,20 @@ export class QuizGame extends window.HTMLElement {
     let i = 6
     const pTag = document.createElement('p')
     this._container.appendChild(pTag)
-    const timeout = setTimeout(function foobar () {
+    const timeout = setTimeout(function foo () {
       i--
       pTag.innerText = `${i}`
       console.log(i)
-      const id = setTimeout(foobar, 100)
+      const id = setTimeout(foo, 100)
       if (i < 1) {
         clearTimeout(id)
         that._timeIsUp()
       }
     }, 100)
+  }
+
+  test () {
+    console.log('test')
   }
 
   _timeIsUp () {
