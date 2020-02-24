@@ -104,31 +104,23 @@ export class QuizGame extends window.HTMLElement {
     }
   }
 
-  /**
-   * The timer
-   */
   _setTimer () {
-    console.log('timer')
-    const prog = document.createElement('progress')
-    prog.setAttribute('value', 5)
-    prog.setAttribute('max', 5)
-    this._container.appendChild(prog)
-    let timesLeft = 5
-    const interval = setInterval(() => {
-      timesLeft--
-      if (timesLeft <= 0) {
-        clearInterval(interval)
-        this._timeIsUp()
-      } else {
-        prog.value = timesLeft
+    const that = this
+    let i = 6
+    const pTag = document.createElement('p')
+    this._container.appendChild(pTag)
+    const timeout = setTimeout(function foobar () {
+      i--
+      pTag.innerText = `${i}`
+      console.log(i)
+      const id = setTimeout(foobar, 100)
+      if (i < 1) {
+        clearTimeout(id)
+        that._timeIsUp()
       }
-      console.log(timesLeft)
-    }, 1000)
+    }, 100)
   }
 
-  /**
-   *  Callback for timer
-   */
   _timeIsUp () {
     const timeUp = document.createElement('p')
     timeUp.innerText = 'Time is up. Try again!'

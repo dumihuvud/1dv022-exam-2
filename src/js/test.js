@@ -112,6 +112,31 @@ export class Test extends window.HTMLElement {
 
 window.customElements.define('x-test', Test)
 
+/**
+   * The timer
+   */
+// _setTimer () {
+//   console.log('timer')
+//   const prog = document.createElement('progress')
+//   prog.setAttribute('value', 5)
+//   prog.setAttribute('max', 5)
+//   this._container.appendChild(prog)
+//   let timesLeft = 5
+//   const interval = setInterval(() => {
+//     timesLeft--
+//     if (timesLeft <= 0) {
+//       clearInterval(interval)
+//       this._timeIsUp()
+//     } else {
+//       prog.value = timesLeft
+//     }
+//     console.log(timesLeft)
+//   }, 1000)
+// }
+
+// /**
+//  *  Callback for timer
+//  */
 // _timeIsUp () {
 //   const timeUp = document.createElement('p')
 //   timeUp.innerText = 'Time is up. Try again!'
@@ -120,21 +145,15 @@ window.customElements.define('x-test', Test)
 // }
 
 // _setTimer () {
-//   console.log('timer')
-//   const prog = document.createElement('progress')
-//   prog.setAttribute('value', '0')
-//   prog.setAttribute('max', 100)
-//   this._container.appendChild(prog)
-//   let start = 0
-//   const interval = setInterval(() => {
-//     if (start > 100) {
-//       clearInterval(interval)
-//       this._timeIsUp()
-//     } else {
-//       prog.value = start
+//   let i = 5
+//   const timeout = setTimeout(function foobar () {
+//     i--
+//     const pTag = document.createElement('p')
+//     pTag.innerText = '$'
+//     this._container.appendChild(pTag)
+//     const id = setTimeout(foobar, 1000)
+//     if (i === 0) {
+//       clearTimeout(id)
 //     }
-
-//     start++
-//     console.log(start)
 //   }, 1000)
 // }
