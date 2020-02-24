@@ -12,6 +12,11 @@ export class QuizGame extends window.HTMLElement {
     this._altDiv = this.shadowRoot.querySelector('.altBtns')
 
     this.nextURL = 'http://vhost3.lnu.se:20080/question/1'
+
+    this.timeLimit = 6
+    this.currentTime = 0
+    this.totalTime = 0
+    this.countTime = setTimeout(args => { }, 0)
   }
 
   /**
@@ -33,6 +38,7 @@ export class QuizGame extends window.HTMLElement {
     const obj = firstQuestion
     const url = firstQuestion.nextURL
     this._renderQuestion(obj, url)
+    this.startTimer()
   }
 
   /**
@@ -41,8 +47,6 @@ export class QuizGame extends window.HTMLElement {
    */
   _renderQuestion (obj, url) {
     this._removeNodes()
-    // this._setTimer()
-    this.test()
     let answerValue = ''
     question_.innerHTML = `<p id="questionPTag">${obj.question}</p>`
     this._container.appendChild(question_.content.cloneNode(true))
@@ -69,6 +73,7 @@ export class QuizGame extends window.HTMLElement {
     const answerBTN = this.shadowRoot.querySelector('#answerBtn')
     answerBTN.addEventListener('click', event => {
       this._postAnswer(answerValue, url)
+      this.removeTimer()
     })
   }
 
@@ -103,33 +108,35 @@ export class QuizGame extends window.HTMLElement {
       this._container.removeChild(this._container.lastChild)
     }
   }
+  // save total time untill the game is done or failed
+  // reset current time each time next is pressed
 
-  _setTimer () {
-    const that = this
-    let i = 6
-    const pTag = document.createElement('p')
-    this._container.appendChild(pTag)
-    const timeout = setTimeout(function foo () {
-      i--
-      pTag.innerText = `${i}`
-      console.log(i)
-      const id = setTimeout(foo, 100)
-      if (i < 1) {
-        clearTimeout(id)
-        that._timeIsUp()
+  removeTimer () {
+    clearTimeout(this.countTime)
+  }
+
+  startTimer () {
+    this.countTime = setTimeout(args => {
+      this.currentTime++
+      this.totalTime++
+      if (this.currentTime < 5) {
+        console.log(this.currentTime)
+        this.startTimer()
+      } else {
+        console.log('loss')
+        this.onLoss()
       }
-    }, 100)
+    }, 1000)
   }
 
-  test () {
-    console.log('test')
-  }
-
-  _timeIsUp () {
-    const timeUp = document.createElement('p')
-    timeUp.innerText = 'Time is up. Try again!'
-    this._removeNodes()
-    this._container.appendChild(timeUp)
+  onLoss () {
+    this.removeTimer()
+    // this._startBtn.disabled = true
+    // this.answerBtn_.disabled = true
+    // save to storage
+    // render highscore
+    // render start button agian
+    // render other html elements
   }
 
   /**
