@@ -1,4 +1,4 @@
-import { messageResponse_, question_, alt_, nextQBtn_, quizForm_, template_, answerBtn_ } from './templates.js'
+import { messageResponse_, question_, alt_, nextQBtn_, quizForm_, template_, answerBtn_, timer_ } from './templates.js'
 
 export class QuizGame extends window.HTMLElement {
   constructor () {
@@ -10,6 +10,7 @@ export class QuizGame extends window.HTMLElement {
     this._container = this.shadowRoot.querySelector('.container')
     this._startBtn = this.shadowRoot.querySelector('#start')
     this._altDiv = this.shadowRoot.querySelector('.altBtns')
+    this._timecontainer = this.shadowRoot.querySelector('#timecontainer')
 
     this.nextURL = 'http://vhost3.lnu.se:20080/question/1'
 
@@ -38,7 +39,7 @@ export class QuizGame extends window.HTMLElement {
     const obj = firstQuestion
     const url = firstQuestion.nextURL
     this._renderQuestion(obj, url)
-    this.startTimer()
+    await this._startTimer()
   }
 
   /**
@@ -48,7 +49,10 @@ export class QuizGame extends window.HTMLElement {
   _renderQuestion (obj, url) {
     this._removeNodes()
     let answerValue = ''
-    question_.innerHTML = `<p id="questionPTag">${obj.question}</p>`
+    question_.innerHTML = `
+    <p>Time left: <span id="currentTime"></span> Total time: <span id="totalTime"></span></p>
+    <p id="questionPTag">${obj.question}</p>
+    `
     this._container.appendChild(question_.content.cloneNode(true))
 
     if (obj.alternatives) {
@@ -73,7 +77,7 @@ export class QuizGame extends window.HTMLElement {
     const answerBTN = this.shadowRoot.querySelector('#answerBtn')
     answerBTN.addEventListener('click', async event => {
       await this._postAnswer(answerValue, url)
-      this.removeTimer()
+      await this._removeTimer()
     })
   }
 
@@ -81,7 +85,9 @@ export class QuizGame extends window.HTMLElement {
    * Gets response from server and creates DOM with answer
    * @param {object} data
    */
-  _renderAnswer (data) {
+  async _renderAnswer (data) {
+    // Winning render
+    await this._onWin()
     if (!data.nextURL) {
       this._removeNodes()
       const won = document.createElement('p')
@@ -93,8 +99,8 @@ export class QuizGame extends window.HTMLElement {
       messageResponse_.innerHTML = `<p>${data.message}</p>`
       this._container.appendChild(messageResponse_.content.cloneNode(true))
       this._container.appendChild(nextQBtn_.content.cloneNode(true))
-      this.shadowRoot.querySelector('#nextQBtn').addEventListener('click', event => {
-        this._getQuestion(data.nextURL)
+      this.shadowRoot.querySelector('#nextQBtn').addEventListener('click', async event => {
+        await this._getQuestion(data.nextURL)
       })
     }
   }
@@ -111,7 +117,7 @@ export class QuizGame extends window.HTMLElement {
 
   // save total time untill the game is done or failed
   // reset current time each time next is pressed
-  removeTimer () {
+  _removeTimer () {
     this.currentTime = 6
     clearTimeout(this.countTime)
     console.log(this.totalTime)
@@ -119,22 +125,33 @@ export class QuizGame extends window.HTMLElement {
     // console.log(this.totalTime)
   }
 
-  startTimer () {
+  _startTimer () {
     this.countTime = setTimeout(args => {
-      this.currentTime--
-      this.totalTime++
-      if (this.currentTime > 0) {
-        console.log(this.currentTime)
-        this.startTimer()
+      this.currentTime -= 0.1
+      this.totalTime += 0.1
+      this._renderTimer()
+      if (this.currentTime > 0.1) {
+        console.log(Math.round(this.currentTime * 100) / 100)
+        this._startTimer()
       } else {
-        this.onLoss()
+        this._onLoss()
       }
-    }, 1000)
+    }, 100)
   }
 
-  onLoss () {
+  _onWin () {
+    console.log('win')
+    this._removeTimer()
+  }
+
+  _renderTimer () {
+    this.shadowRoot.querySelector('#currentTime').innerText = `${Math.round(this.currentTime * 100) / 100}`
+    this.shadowRoot.querySelector('#totalTime').innerText = `${Math.round(this.totalTime * 100) / 100}`
+  }
+
+  _onLoss () {
     console.log('loss')
-    this.removeTimer()
+    this._removeTimer()
     // this.totalTimeArr.push(this.totalTime)
     console.log(this.totalTime)
     // this._startBtn.disabled = true
