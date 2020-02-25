@@ -1,3 +1,4 @@
+
 import { messageResponse_, question_, alt_, nextQBtn_, quizForm_, template_, answerBtn_ } from './templates.js'
 
 export class QuizGame extends window.HTMLElement {
@@ -23,7 +24,9 @@ export class QuizGame extends window.HTMLElement {
    * onclick <start> gets the question
    */
   connectedCallback () {
+    // this._clearLocalStorage()
     this._startBtn.addEventListener('click', event => {
+      this._saveUser()
       this._getQuestion(this.nextURL)
     })
   }
@@ -104,6 +107,28 @@ export class QuizGame extends window.HTMLElement {
     }
   }
 
+  // should update onloss, onwin
+  _updateScore () {
+    const existing = window.localStorage.getItem(this.user)
+    if (existing) {
+      window.localStorage.setItem(this.user, this.totalTime)
+    }
+  }
+
+  _saveUser () {
+    const fname = this.shadowRoot.querySelector('#fname')
+    const lname = this.shadowRoot.querySelector('#lname')
+    this.user = `${fname.value} ${lname.value}`
+
+    if (window.localStorage.getItem(this.user) === null) {
+      window.localStorage.setItem(this.user, 'user')
+    }
+  }
+
+  _clearLocalStorage () {
+    window.localStorage.clear()
+  }
+
   // save total time untill the game is done or failed
   // reset current time each time next is pressed
   _removeTimer () {
@@ -124,10 +149,16 @@ export class QuizGame extends window.HTMLElement {
     }, 100)
   }
 
+  _renderTimer () {
+    this.shadowRoot.querySelector('#timeLeft').innerText = `${Math.round(this.timeLeft * 100) / 100}`
+    this.shadowRoot.querySelector('#totalTime').innerText = `${Math.round(this.totalTime * 100) / 100}`
+  }
+
   _onWin () {
     console.log('win')
     this._removeNodes()
     this._removeTimer()
+    this._updateScore()
     const won = document.createElement('p')
     won.innerText = 'You won'
     this._container.appendChild(won)
@@ -144,14 +175,10 @@ export class QuizGame extends window.HTMLElement {
     })
   }
 
-  _renderTimer () {
-    this.shadowRoot.querySelector('#timeLeft').innerText = `${Math.round(this.timeLeft * 100) / 100}`
-    this.shadowRoot.querySelector('#totalTime').innerText = `${Math.round(this.totalTime * 100) / 100}`
-  }
-
   _onLoss () {
     console.log('loss')
     this._removeTimer()
+    this._updateScore()
     this._removeNodes()
     const lossDiv = document.createElement('template')
     lossDiv.innerHTML = `
@@ -165,6 +192,7 @@ export class QuizGame extends window.HTMLElement {
       this.totalTime = 0
       this._getQuestion(againURL)
     })
+
     // save to storage
     // render highscore
     // render start button agian
