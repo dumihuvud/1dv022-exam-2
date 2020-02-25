@@ -50,7 +50,7 @@ export class QuizGame extends window.HTMLElement {
     this._removeNodes()
     let answerValue = ''
     question_.innerHTML = `
-    <p>Time left: <span id="currentTime"></span> Total time: <span id="totalTime"></span></p>
+    <p>Time left: <span id="currentTime"></span> sec. Total time: <span id="totalTime"></span> sec.</p>
     <p id="questionPTag">${obj.question}</p>
     `
     this._container.appendChild(question_.content.cloneNode(true))
@@ -76,8 +76,12 @@ export class QuizGame extends window.HTMLElement {
     this._container.appendChild(answerBtn_.content.cloneNode(true))
     const answerBTN = this.shadowRoot.querySelector('#answerBtn')
     answerBTN.addEventListener('click', async event => {
-      await this._postAnswer(answerValue, url)
-      await this._removeTimer()
+      if (answerValue === '') {
+        // return
+      } else {
+        await this._postAnswer(answerValue, url)
+        await this._removeTimer()
+      }
     })
   }
 
@@ -87,8 +91,12 @@ export class QuizGame extends window.HTMLElement {
    */
   async _renderAnswer (data) {
     // Winning render
-    await this._onWin()
-    if (!data.nextURL) {
+    // await this._onWin()
+    // console.log(JSON.stringify(data))
+    if (!data.nextURL && data.message) {
+      this._removeNodes()
+      this._onLoss()
+    } else if (!data.nextURL) {
       this._removeNodes()
       const won = document.createElement('p')
       won.innerText = 'You won'
@@ -152,8 +160,16 @@ export class QuizGame extends window.HTMLElement {
   _onLoss () {
     console.log('loss')
     this._removeTimer()
-    // this.totalTimeArr.push(this.totalTime)
     console.log(this.totalTime)
+    this._removeNodes()
+    const lossDiv = document.createElement('template')
+    lossDiv.innerHTML = `
+    <p>You didnt answer all questions</p>
+    <p>Your total time was: <span>${Math.round(this.totalTime * 100) / 100}</span> seconds<p>
+    <button id="again">Start again</button>
+    `
+    this._container.appendChild(lossDiv.content.cloneNode(true))
+    // lossPtag.innerText =
     // this._startBtn.disabled = true
     // this.answerBtn_.disabled = true
     // save to storage
