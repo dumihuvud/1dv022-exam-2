@@ -14,8 +14,7 @@ export class QuizGame extends window.HTMLElement {
 
     this.nextURL = 'http://vhost3.lnu.se:20080/question/1'
 
-    this.totalTimeArr = []
-    this.currentTime = 6
+    this.timeLeft = 6
     this.totalTime = 0
     this.countTime = setTimeout(args => { }, 0)
   }
@@ -50,7 +49,7 @@ export class QuizGame extends window.HTMLElement {
     this._removeNodes()
     let answerValue = ''
     question_.innerHTML = `
-    <p>Time left: <span id="currentTime"></span> sec. Total time: <span id="totalTime"></span> sec.</p>
+    <p>Time left: <span id="timeLeft"></span> sec. Total time: <span id="totalTime"></span> sec.</p>
     <p id="questionPTag">${obj.question}</p>
     `
     this._container.appendChild(question_.content.cloneNode(true))
@@ -105,29 +104,19 @@ export class QuizGame extends window.HTMLElement {
     }
   }
 
-  /**
-   * Helper function.
-   * Removes nodes in div
-   */
-  _removeNodes () {
-    while (this._container.firstChild) {
-      this._container.removeChild(this._container.lastChild)
-    }
-  }
-
   // save total time untill the game is done or failed
   // reset current time each time next is pressed
   _removeTimer () {
-    this.currentTime = 6
+    this.timeLeft = 6
     clearTimeout(this.countTime)
   }
 
   _startTimer () {
     this.countTime = setTimeout(args => {
-      this.currentTime -= 0.1
+      this.timeLeft -= 0.1
       this.totalTime += 0.1
       this._renderTimer()
-      if (this.currentTime > 0.1) {
+      if (this.timeLeft > 0.1) {
         this._startTimer()
       } else {
         this._onLoss()
@@ -141,10 +130,22 @@ export class QuizGame extends window.HTMLElement {
     const won = document.createElement('p')
     won.innerText = 'You won'
     this._container.appendChild(won)
+    const winDiv = document.createElement('template')
+    winDiv.innerHTML = `
+    <p>You didnt answer all questions</p>
+    <p>Your total time was: <span>${Math.round(this.totalTime * 100) / 100}</span> seconds<p>
+    <button id="again">Start again</button>
+    `
+    this._container.appendChild(winDiv.content.cloneNode(true))
+    this.shadowRoot.querySelector('#again').addEventListener('click', event => {
+      const againURL = 'http://vhost3.lnu.se:20080/question/1'
+      this.totalTime = 0
+      this._getQuestion(againURL)
+    })
   }
 
   _renderTimer () {
-    this.shadowRoot.querySelector('#currentTime').innerText = `${Math.round(this.currentTime * 100) / 100}`
+    this.shadowRoot.querySelector('#timeLeft').innerText = `${Math.round(this.timeLeft * 100) / 100}`
     this.shadowRoot.querySelector('#totalTime').innerText = `${Math.round(this.totalTime * 100) / 100}`
   }
 
@@ -167,6 +168,16 @@ export class QuizGame extends window.HTMLElement {
     // render highscore
     // render start button agian
     // render other html elements
+  }
+
+  /**
+   * Helper function.
+   * Removes nodes in div
+   */
+  _removeNodes () {
+    while (this._container.firstChild) {
+      this._container.removeChild(this._container.lastChild)
+    }
   }
 
   /**
