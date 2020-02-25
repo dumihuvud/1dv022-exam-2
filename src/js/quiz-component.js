@@ -13,8 +13,8 @@ export class QuizGame extends window.HTMLElement {
 
     this.nextURL = 'http://vhost3.lnu.se:20080/question/1'
 
-    this.timeLimit = 6
-    this.currentTime = 0
+    this.totalTimeArr = []
+    this.currentTime = 6
     this.totalTime = 0
     this.countTime = setTimeout(args => { }, 0)
   }
@@ -71,8 +71,8 @@ export class QuizGame extends window.HTMLElement {
     }
     this._container.appendChild(answerBtn_.content.cloneNode(true))
     const answerBTN = this.shadowRoot.querySelector('#answerBtn')
-    answerBTN.addEventListener('click', event => {
-      this._postAnswer(answerValue, url)
+    answerBTN.addEventListener('click', async event => {
+      await this._postAnswer(answerValue, url)
       this.removeTimer()
     })
   }
@@ -108,29 +108,35 @@ export class QuizGame extends window.HTMLElement {
       this._container.removeChild(this._container.lastChild)
     }
   }
+
   // save total time untill the game is done or failed
   // reset current time each time next is pressed
-
   removeTimer () {
+    this.currentTime = 6
     clearTimeout(this.countTime)
+    console.log(this.totalTime)
+    // this.totalTimeArr.push(this.totalTime)
+    // console.log(this.totalTime)
   }
 
   startTimer () {
     this.countTime = setTimeout(args => {
-      this.currentTime++
+      this.currentTime--
       this.totalTime++
-      if (this.currentTime < 5) {
+      if (this.currentTime > 0) {
         console.log(this.currentTime)
         this.startTimer()
       } else {
-        console.log('loss')
         this.onLoss()
       }
     }, 1000)
   }
 
   onLoss () {
+    console.log('loss')
     this.removeTimer()
+    // this.totalTimeArr.push(this.totalTime)
+    console.log(this.totalTime)
     // this._startBtn.disabled = true
     // this.answerBtn_.disabled = true
     // save to storage
