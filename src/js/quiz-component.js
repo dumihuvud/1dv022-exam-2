@@ -1,4 +1,4 @@
-import { messageResponse_, question_, alt_, nextQBtn_, quizForm_, template_, answerBtn_, timer_ } from './templates.js'
+import { messageResponse_, question_, alt_, nextQBtn_, quizForm_, template_, answerBtn_ } from './templates.js'
 
 export class QuizGame extends window.HTMLElement {
   constructor () {
@@ -38,7 +38,7 @@ export class QuizGame extends window.HTMLElement {
     const obj = firstQuestion
     const url = firstQuestion.nextURL
     this._renderQuestion(obj, url)
-    await this._startTimer()
+    this._startTimer()
   }
 
   /**
@@ -78,7 +78,7 @@ export class QuizGame extends window.HTMLElement {
         // return
       } else {
         await this._postAnswer(answerValue, url)
-        await this._removeTimer()
+        this._removeTimer()
       }
     })
   }
@@ -125,6 +125,7 @@ export class QuizGame extends window.HTMLElement {
   }
 
   _onWin () {
+    console.log('win')
     this._removeNodes()
     this._removeTimer()
     const won = document.createElement('p')
@@ -132,7 +133,6 @@ export class QuizGame extends window.HTMLElement {
     this._container.appendChild(won)
     const winDiv = document.createElement('template')
     winDiv.innerHTML = `
-    <p>You didnt answer all questions</p>
     <p>Your total time was: <span>${Math.round(this.totalTime * 100) / 100}</span> seconds<p>
     <button id="again">Start again</button>
     `
@@ -150,6 +150,7 @@ export class QuizGame extends window.HTMLElement {
   }
 
   _onLoss () {
+    console.log('loss')
     this._removeTimer()
     this._removeNodes()
     const lossDiv = document.createElement('template')

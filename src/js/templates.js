@@ -1,5 +1,3 @@
-export const timer_ = document.createElement('template')
-
 export const messageResponse_ = document.createElement('template')
 
 export const question_ = document.createElement('template')
@@ -25,9 +23,16 @@ template_.innerHTML = `
 <div class="start">
 <h4><b>The quiz game</b></h4>
   <div id="timecontainer"></div>
+  <div class="register">
+    <form>
+    <label for="fname">First name:</label><br>
+    <input type="text" id="fname" name="fname"><br>
+    <label for="lname">Last name:</label><br>
+    <input type="text" id="lname" name="lname"><br><br>
+    </form>
+  </div>
   <div class="container">
-    <p>Start the game:</p>
-    <button id="start">Start</button>
+    <p class="p-inline">Start the game: </p><button id="start">Start</button>
   </div>
   <div class="altBtns"></div>
 </div>
@@ -40,6 +45,10 @@ template_.innerHTML = `
 }
 
 .container {
+}
+
+.p-inline{
+  display: inline;
 }
 </style>
 `
