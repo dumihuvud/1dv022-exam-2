@@ -63,7 +63,6 @@ export class QuizGame extends window.HTMLElement {
       this._container.addEventListener('click', event => {
         if (event.target.id === 'alt1' || event.target.id === 'alt2' || event.target.id === 'alt3' || event.target.id === 'alt4') {
           answerValue = event.target.id
-          console.log(answerValue)
         }
       })
     } else {
@@ -86,24 +85,17 @@ export class QuizGame extends window.HTMLElement {
   }
 
   /**
-   * Gets response from server and creates DOM with answer
+   * Gets response from server and renders DOM
    * @param {object} data
    */
   async _renderAnswer (data) {
-    // Winning render
-    // await this._onWin()
-    // console.log(JSON.stringify(data))
-    if (!data.nextURL && data.message) {
+    if (data.message.length === 15 && !data.nextURL) {
+      this._onWin()
+    } else if (data.message.length === 16) {
       this._removeNodes()
       this._onLoss()
-    } else if (!data.nextURL) {
-      this._removeNodes()
-      const won = document.createElement('p')
-      won.innerText = 'You won'
-      this._container.appendChild(won)
     } else {
       this._removeNodes()
-      console.log(data)
       messageResponse_.innerHTML = `<p>${data.message}</p>`
       this._container.appendChild(messageResponse_.content.cloneNode(true))
       this._container.appendChild(nextQBtn_.content.cloneNode(true))
@@ -128,9 +120,6 @@ export class QuizGame extends window.HTMLElement {
   _removeTimer () {
     this.currentTime = 6
     clearTimeout(this.countTime)
-    console.log(this.totalTime)
-    // this.totalTimeArr.push(this.totalTime)
-    // console.log(this.totalTime)
   }
 
   _startTimer () {
@@ -139,7 +128,6 @@ export class QuizGame extends window.HTMLElement {
       this.totalTime += 0.1
       this._renderTimer()
       if (this.currentTime > 0.1) {
-        console.log(Math.round(this.currentTime * 100) / 100)
         this._startTimer()
       } else {
         this._onLoss()
@@ -148,8 +136,11 @@ export class QuizGame extends window.HTMLElement {
   }
 
   _onWin () {
-    console.log('win')
+    this._removeNodes()
     this._removeTimer()
+    const won = document.createElement('p')
+    won.innerText = 'You won'
+    this._container.appendChild(won)
   }
 
   _renderTimer () {
@@ -158,9 +149,7 @@ export class QuizGame extends window.HTMLElement {
   }
 
   _onLoss () {
-    console.log('loss')
     this._removeTimer()
-    console.log(this.totalTime)
     this._removeNodes()
     const lossDiv = document.createElement('template')
     lossDiv.innerHTML = `
@@ -169,9 +158,11 @@ export class QuizGame extends window.HTMLElement {
     <button id="again">Start again</button>
     `
     this._container.appendChild(lossDiv.content.cloneNode(true))
-    // lossPtag.innerText =
-    // this._startBtn.disabled = true
-    // this.answerBtn_.disabled = true
+    this.shadowRoot.querySelector('#again').addEventListener('click', event => {
+      const againURL = 'http://vhost3.lnu.se:20080/question/1'
+      this.totalTime = 0
+      this._getQuestion(againURL)
+    })
     // save to storage
     // render highscore
     // render start button agian
