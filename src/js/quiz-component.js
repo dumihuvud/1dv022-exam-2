@@ -114,6 +114,9 @@ export class QuizGame extends window.HTMLElement {
     }
   }
 
+  /**
+   *  Checks the input firlds and saves data to local storage.
+   */
   _saveUser () {
     const fname = this.shadowRoot.querySelector('#fname')
     const lname = this.shadowRoot.querySelector('#lname')
@@ -128,8 +131,6 @@ export class QuizGame extends window.HTMLElement {
     window.localStorage.clear()
   }
 
-  // save total time untill the game is done or failed
-  // reset current time each time next is pressed
   _removeTimer () {
     this.timeLeft = 6
     clearTimeout(this.countTime)
@@ -153,9 +154,10 @@ export class QuizGame extends window.HTMLElement {
     this.shadowRoot.querySelector('#totalTime').innerText = `${Math.round(this.totalTime * 100) / 100}`
   }
 
-  _sortLocalStorage () {
-  }
-
+  /**
+   * Sorts local storage by value
+   * If user answered all questions it renders dom and showing chart of top players
+   */
   _onWin () {
     this._removeNodes()
     this._removeTimer()
@@ -191,9 +193,14 @@ export class QuizGame extends window.HTMLElement {
     }
   }
 
+  /**
+   * If user didnt answer all questions removes timer
+   * removes _container nodes and renders DOM
+   */
   _onLoss () {
     this._removeTimer()
     this._removeNodes()
+
     const lossDiv = document.createElement('template')
     lossDiv.innerHTML = `
     <p>You didnt answer all questions</p>
@@ -206,17 +213,8 @@ export class QuizGame extends window.HTMLElement {
       this.totalTime = 0
       this._getQuestion(againURL)
     })
-
-    // save to storage
-    // render highscore
-    // render start button agian
-    // render other html elements
   }
 
-  /**
-   * Helper function.
-   * Removes nodes in div
-   */
   _removeNodes () {
     while (this._container.firstChild) {
       this._container.removeChild(this._container.lastChild)
@@ -252,5 +250,3 @@ export class QuizGame extends window.HTMLElement {
 }
 
 window.customElements.define('x-quiz-game', QuizGame)
-
-// event prevent default on form so that you cant send an empty form
