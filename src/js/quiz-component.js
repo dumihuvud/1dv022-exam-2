@@ -1,4 +1,3 @@
-
 import { messageResponse_, question_, alt_, nextQBtn_, quizForm_, template_, answerBtn_ } from './templates.js'
 
 export class QuizGame extends window.HTMLElement {
@@ -111,7 +110,7 @@ export class QuizGame extends window.HTMLElement {
   _updateScore () {
     const existing = window.localStorage.getItem(this.user)
     if (existing) {
-      window.localStorage.setItem(this.user, this.totalTime)
+      window.localStorage.setItem(this.user, Math.round(this.totalTime * 100) / 100)
     }
   }
 
@@ -154,17 +153,28 @@ export class QuizGame extends window.HTMLElement {
     this.shadowRoot.querySelector('#totalTime').innerText = `${Math.round(this.totalTime * 100) / 100}`
   }
 
+  _sortLocalStorage () {
+  }
+
   _onWin () {
-    console.log('win')
     this._removeNodes()
     this._removeTimer()
     this._updateScore()
+
+    const local = window.localStorage
+    delete local.loglevel
+    const arrOfArrays = Object.entries(local)
+    arrOfArrays.sort((a, b) => a[1] - b[1])
+    console.log(arrOfArrays)
+
     const won = document.createElement('p')
-    won.innerText = 'You won'
+    won.innerText = 'You answered all questions.'
     this._container.appendChild(won)
     const winDiv = document.createElement('template')
     winDiv.innerHTML = `
     <p>Your total time was: <span>${Math.round(this.totalTime * 100) / 100}</span> seconds<p>
+    <ol id="score">
+    </ol>
     <button id="again">Start again</button>
     `
     this._container.appendChild(winDiv.content.cloneNode(true))
@@ -173,12 +183,16 @@ export class QuizGame extends window.HTMLElement {
       this.totalTime = 0
       this._getQuestion(againURL)
     })
+    const scoreList = this.shadowRoot.querySelector('#score')
+    for (let i = 0; i < arrOfArrays.length; i++) {
+      const li = document.createElement('li')
+      li.innerText = `Username: ${arrOfArrays[i][0]} Score: ${arrOfArrays[i][1]}`
+      scoreList.appendChild(li)
+    }
   }
 
   _onLoss () {
-    console.log('loss')
     this._removeTimer()
-    this._updateScore()
     this._removeNodes()
     const lossDiv = document.createElement('template')
     lossDiv.innerHTML = `
@@ -238,3 +252,5 @@ export class QuizGame extends window.HTMLElement {
 }
 
 window.customElements.define('x-quiz-game', QuizGame)
+
+// event prevent default on form so that you cant send an empty form
