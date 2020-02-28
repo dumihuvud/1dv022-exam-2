@@ -65,7 +65,7 @@ export class Refactor extends window.HTMLElement {
     this.pQuestion = this.shadowRoot.querySelector('#question')
     this.answerInput = this.shadowRoot.querySelector('#answerInput')
     this.answerBtn = this.shadowRoot.querySelector('#answerBtn')
-    this.nextURL = 'http://vhost3.lnu.se:20080/question/21'
+    this.nextURL = 'http://vhost3.lnu.se:20080/question/1'
   }
 
   connectedCallback () {
@@ -73,12 +73,15 @@ export class Refactor extends window.HTMLElement {
       this._validateForm()
     })
     this.startBtn.addEventListener('click', event => {
-      this.hideStartForm()
+      this._hideStartForm()
       this.getQuestion(this.nextURL)
       this.getAnswer()
     })
   }
 
+  /**
+   *  Validates the input field if its empty
+   */
   _validateForm () {
     const inputVal = this.shadowRoot.querySelector('#username').value
     if (!inputVal) {
@@ -88,15 +91,24 @@ export class Refactor extends window.HTMLElement {
     }
   }
 
+  /**
+   * sends the url to servers and gets obj
+   * @param {string} nextURL
+   */
   async getQuestion (nextURL) {
     let firstQuestion = await window.fetch(nextURL)
     firstQuestion = await firstQuestion.json()
     const obj = firstQuestion
-    const url = firstQuestion.nextURL
+    this.answerURL = firstQuestion.nextURL
 
-    this.renderQuestion(obj, url)
+    this.renderQuestion(obj)
   }
 
+  /**
+   * Renders the question to html
+   * @param {object} obj
+   * @param {string} url
+   */
   renderQuestion (obj, url) {
     console.log(obj)
     this.pQuestion.innerText = `${obj.question}`
@@ -114,18 +126,47 @@ export class Refactor extends window.HTMLElement {
     }
   }
 
+  /**
+   * Checks the values of input and buttons
+   */
   getAnswer () {
-    this.answerInput.addEventListener('input', event => {
-      console.log(this.answerInput.value)
+    this.answerBtn.addEventListener('click', async event => {
+      this.answer = this.answerInput.value
+      await this.postAnswer(this.answer)
     })
-    this.btns.addEventListener('click', event => {
+    this.btns.addEventListener('click', async event => {
       if (event.target.id === 'alt1' || event.target.id === 'alt2' || event.target.id === 'alt3' || event.target.id === 'alt4') {
         console.log(event.target.id)
+        this.answer = event.target.id
+        await this.postAnswer(this.answer)
       }
     })
   }
 
-  hideStartForm () {
+  async postAnswer (answerVal) {
+    console.log(answerVal)
+    const data = { answer: answerVal }
+    const settings = {
+      method: 'Post',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    }
+    try {
+      const postResponse = await window.fetch(this.answerURL, settings)
+      const getData = await postResponse.json()
+      console.log(getData)
+    } catch (error) {
+      console.log(error)
+      return error
+    }
+  }
+
+  /**
+   * Helper method to hide div
+   */
+  _hideStartForm () {
     this.constainerStart.style.display = 'none'
   }
 }
