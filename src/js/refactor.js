@@ -15,6 +15,8 @@ export class Refactor extends window.HTMLElement {
       </div>
       <div class="quiz">
           <div class="quiz-question">
+            <p id="p-total">Total time: <span id="total-time"></span></p>
+            <p id="p-time-left">Time left: <span id="time-left"></span></p>
             <p id="question"></p>
             <input type="text" id="answerInput" /> <button id="answerBtn">Answer</button>
             <div class="btns">
@@ -115,9 +117,16 @@ export class Refactor extends window.HTMLElement {
     this.nextQBtn = this.shadowRoot.querySelector('#next-question')
     this.pAnswer = this.shadowRoot.querySelector('#message-response')
 
+    this.spanTotal = this.shadowRoot.querySelector('#total-time')
+    this.spanTimeLeft = this.shadowRoot.querySelector('#time-left')
+
     this.restartDiv = this.shadowRoot.querySelector('.restart-quiz')
 
     this.nextURL = 'http://vhost3.lnu.se:20080/question/1'
+    this.players = []
+    this.timeLeft = 10
+    this.totalTime = 0
+    this.countTime = setTimeout(args => { }, 0)
   }
 
   connectedCallback () {
@@ -146,6 +155,7 @@ export class Refactor extends window.HTMLElement {
     this.nextURL = firstQuestion.nextURL
 
     this.renderQuestion(this.obj)
+    this.setTimer()
   }
 
   /**
@@ -174,6 +184,7 @@ export class Refactor extends window.HTMLElement {
       this.btns.style.display = 'none'
       this._showAnswerInput()
     }
+    this.removeTimer()
   }
 
   /**
@@ -190,6 +201,7 @@ export class Refactor extends window.HTMLElement {
         await this.postAnswer(this.answer)
       }
     })
+    this.removeTimer()
   }
 
   renderAnswer (obj) {
@@ -231,17 +243,17 @@ export class Refactor extends window.HTMLElement {
     }
   }
 
-  saveToLocalStorage (username) {
+  saveToLocalStorage (username, time) {
     let players = window.localStorage.getItem('scoreBoard')
     if (players === null) {
       let players = []
-      players[0] = { name: username, score: 'time' }
+      players[0] = { name: username, score: time }
       players = JSON.stringify(players)
       window.localStorage.setItem('scoreBoard', players)
       return JSON.parse(players)
     } else {
       players = JSON.parse(players)
-      players.push({ name: username, score: 'time' })
+      players.push({ name: username, score: time })
       this.sortScore(players)
     }
     players = JSON.stringify(players)
@@ -250,25 +262,59 @@ export class Refactor extends window.HTMLElement {
   }
 
   sortScore (players) {
-
+    for (let i = 0; i < players.length; i++) {
+      for (let y = i + 1; y < players.length; y++) {
+        if (players[i].score > players[y].score) {
+          const temp = players[y]
+          players[y] = players[i]
+          players[i] = temp
+        }
+      }
+    }
   }
 
   onWin () {
     console.log('win')
-    this.players = this.saveToLocalStorage(this.username)
-    for (let i = 0; i < 5; i++) {
+    this.removeTimer()
+    this.players = this.saveToLocalStorage(this.username, parseFloat(this.totalTime.toFixed(2)))
+    const sortedPlayers = this.players.slice(0, 5)
+
+    for (let i = 0; i < sortedPlayers.length; i++) {
       const li = document.createElement('li')
-      li.innerText = `Username: ${this.players[i].name}. Time: ${this.players[i].score}`
+      li.innerText = `Username: ${sortedPlayers[i].name}. Time: ${sortedPlayers[i].score}`
       this.scoreList.appendChild(li)
     }
   }
 
   onLoss () {
     console.log('loss')
+    this.removeTimer()
   }
 
+  /**
+   * Timer functions below
+   */
   setTimer () {
+    this.countTime = setTimeout(args => {
+      this.timeLeft -= 0.1
+      this.totalTime += 0.1
+      this.renderTimer()
+      if (this.timeLeft > 0.1) {
+        this.setTimer()
+      } else {
+        this.onLoss()
+      }
+    }, 100)
+  }
 
+  renderTimer () {
+    this.spanTimeLeft.innerText = `${Math.round(this.timeLeft * 100) / 100}`
+    this.spanTotal.innerText = `${Math.round(this.totalTime * 100) / 100}`
+  }
+
+  removeTimer () {
+    this.timeLeft = 10
+    clearTimeout(this.countTime)
   }
 
   /**
@@ -283,9 +329,9 @@ export class Refactor extends window.HTMLElement {
     }
   }
 
-  /*
-    Helper methods below to hide or show dom elements
-  */
+  /**
+   * Helper methods below to hide or show dom elements
+   */
   _showAnswerInput () {
     this.answerInput.value = ''
     this.quizQuestion.style.display = 'block'
