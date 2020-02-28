@@ -1,5 +1,12 @@
 import { messageResponse_, question_, alt_, nextQBtn_, quizForm_, template_, answerBtn_ } from './templates.js'
 
+/**
+ * Custom element. Quiz game.
+ * @module templates is used to store html templates
+ * @var this.nextURL is used to save the link to next question from the server
+ * @class QuizGame
+ * @extends (window.HTMLElement)
+ */
 export class QuizGame extends window.HTMLElement {
   constructor () {
     super()

@@ -1,98 +1,18 @@
-export class Refactor extends window.HTMLElement {
+import { templateRef_ } from './templates.js'
+
+/**
+ * Custom element. Quiz game. Refactored.
+ * A different approach to handle DOM
+ * Using CSS to display elements instead of rendering and rerendering DOM
+ * @module templates is used to store html templates
+ * @var this.nextURL is used to save the link to next question from the server
+ * @class QuizGame
+ * @extends (window.HTMLElement)
+ */
+export class QuizGameRef extends window.HTMLElement {
   constructor () {
     super()
 
-    const templateRef_ = document.createElement('template')
-    templateRef_.innerHTML = `
-    <div class="start">
-    <h4><b>The quiz game</b></h4>
-      <div class="container-start">
-          <form id="start-form">
-              <label for="username">Username:</label>
-              <input type="text" id="username" name="username">
-          </form><br>
-          <p class="p-inline">Start the quiz </p><button id="start" disabled>Start</button>
-      </div>
-      <div class="quiz">
-          <div class="quiz-question">
-            <p id="p-total">Total time: <span id="total-time"></span></p>
-            <p id="p-time-left">Time left: <span id="time-left"></span></p>
-            <p id="question"></p>
-            <input type="text" id="answerInput" /> <button id="answerBtn">Answer</button>
-            <div class="btns">
-
-            </div>
-          </div>
-          <div class="response">
-            <p id="message-response"></p><button id="next-question">Next</button>
-          </div>
-      </div>
-      <div class="restart-quiz">
-        <p id="p-restart">Try again</p><button id="restart-btn">Restart</button>
-      </div>
-      <div class="score-board">
-        <p id="p-score">Score board:</p>
-        <ol id="score-list">
-        
-        </ol>
-      </div>
-    </div>
-
-    <style>
-    .start {
-    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
-    padding: 2px 20px 20px 20px;
-    }
-
-    .p-inline {
-        display: inline;
-    }
-
-    .quiz {
-        display: none;
-    }
-
-    #answerInput {
-        display: none;
-    }
-
-    #answerBtn {
-      display: none;
-    }
-
-    .response {
-      display:none;
-    }
-
-    #message-response {
-      display: inline;
-    }
-
-    #next-question {
-      display: inline;
-    }
-
-    .btns {
-        display: none;
-    }
-
-    .restart-quiz {
-      display: none;
-    }
-
-    #p-restart {
-      display: inline;
-    }
-
-    #restart-btn {
-      display: inline;
-    }
-
-    .score-board {
-      display: none;
-    }
-    </style>
-    `
     this.attachShadow({ mode: 'open' })
     this.shadowRoot.appendChild(templateRef_.content.cloneNode(true))
 
@@ -121,6 +41,8 @@ export class Refactor extends window.HTMLElement {
     this.spanTimeLeft = this.shadowRoot.querySelector('#time-left')
 
     this.restartDiv = this.shadowRoot.querySelector('.restart-quiz')
+    this.restartBtn = this.shadowRoot.querySelector('#restart-btn')
+    this.restartBtnScore = this.shadowRoot.querySelector('#restart-btn-score')
 
     this.nextURL = 'http://vhost3.lnu.se:20080/question/1'
     this.players = []
@@ -130,11 +52,19 @@ export class Refactor extends window.HTMLElement {
   }
 
   connectedCallback () {
-    // this._clearLocalStorage()
+    /**
+     * Checks if the input is not empty
+     * @memberof QuizGameRef
+     */
     this.startForm.addEventListener('input', event => {
       this._validateForm()
     })
 
+    /**
+     * Gets the value of input field and updates this.username
+     * Loads the first question with provided link in constructor
+     * @memberof QuizGameRef
+     */
     this.startBtn.addEventListener('click', event => {
       this.username = this.startForm.value
 
@@ -145,8 +75,11 @@ export class Refactor extends window.HTMLElement {
   }
 
   /**
-   * sends the url to servers and gets obj
+   * Sends the url to server and gets obj back
    * @param {string} nextURL
+   * @var {obj} obj The response from the server, used to acquire information about the response
+   * @var {string} firstQuestion.nextURL The response from the server, used to update this.nextURL
+   * @memberof QuizGameRef
    */
   async getQuestion (nextURL) {
     let firstQuestion = await window.fetch(nextURL)
@@ -160,8 +93,8 @@ export class Refactor extends window.HTMLElement {
 
   /**
    * Renders the question to html
-   * @param {object} obj
-   * @param {string} url
+   * @param {object} obj The response obj is used to render the DOM
+   * @memberof QuizGameRef
    */
   renderQuestion (obj) {
     this._hideResponse()
@@ -188,7 +121,9 @@ export class Refactor extends window.HTMLElement {
   }
 
   /**
-   * Checks the values of input and buttons
+   * Gets the values of input field and buttons
+   * @var {string} this.answer The value that is to be sent to the server
+   * @memberof QuizGameRef
    */
   getAnswer () {
     this.answerBtn.addEventListener('click', async event => {
@@ -204,6 +139,12 @@ export class Refactor extends window.HTMLElement {
     this.removeTimer()
   }
 
+  /**
+   *  Gets a response from the server as object and checks for differences
+   *  Renders the HTML based on object properties
+   * @param {object} obj The response from the server to be rendered into HTML
+   * @memberof QuizGameRef
+   */
   renderAnswer (obj) {
     if (obj.message.length === 15 && !obj.nextURL) {
       this.onWin()
@@ -211,8 +152,6 @@ export class Refactor extends window.HTMLElement {
       this._showScoreBoard()
     } else if (obj.message.length === 16) {
       this.onLoss()
-      this._hideQuiz()
-      this._showRestart()
     } else {
       this._hideQuiz()
       this.pAnswer.innerText = obj.message
@@ -223,6 +162,14 @@ export class Refactor extends window.HTMLElement {
     }
   }
 
+  /**
+   * Sends the answer to the server via POST method, if error occurs it catches it and logs it
+   * If no errors occurred it get the response and converts it to JSON object
+   * The JSON object is then sent to render
+   * @var {object} this.obj JSON
+   * @param {string} answerVal The value of input or buttons that is to be sent to the server
+   * @memberof QuizGameRef
+   */
   async postAnswer (answerVal) {
     const data = { answer: answerVal }
     const settings = {
@@ -243,6 +190,15 @@ export class Refactor extends window.HTMLElement {
     }
   }
 
+  /**
+   * Checks if the local storage does already have scoreBoard key
+   * If it does not,  then it creates an object and stringify it to sent to local storage as key
+   * If scoreBoard already exists, it parses the key and pushes new values to it
+   * Saves the username value to local storage as a JSON object
+   * @param {string} username
+   * @param {string} time
+   * @memberof QuizGameRef
+   */
   saveToLocalStorage (username, time) {
     let players = window.localStorage.getItem('scoreBoard')
     if (players === null) {
@@ -261,6 +217,11 @@ export class Refactor extends window.HTMLElement {
     return JSON.parse(players)
   }
 
+  /**
+   * Sorts the array by value
+   * @param {array} players is used to be sorted by value
+   * @memberof QuizGameRef
+   */
   sortScore (players) {
     for (let i = 0; i < players.length; i++) {
       for (let y = i + 1; y < players.length; y++) {
@@ -273,8 +234,12 @@ export class Refactor extends window.HTMLElement {
     }
   }
 
+  /**
+   * Creates a new list of elements to be shown in the score board
+   * @function saveToLocalStorage Is used to save to local storage every user that has answered to all questions
+   * @memberof QuizGameRef
+   */
   onWin () {
-    console.log('win')
     this.removeTimer()
     this.players = this.saveToLocalStorage(this.username, parseFloat(this.totalTime.toFixed(2)))
     const sortedPlayers = this.players.slice(0, 5)
@@ -284,11 +249,40 @@ export class Refactor extends window.HTMLElement {
       li.innerText = `Username: ${sortedPlayers[i].name}. Time: ${sortedPlayers[i].score}`
       this.scoreList.appendChild(li)
     }
+
+    this.restartBtnScore.addEventListener('click', event => {
+      this.getQuestion('http://vhost3.lnu.se:20080/question/1')
+      this.getAnswer()
+      this.scoreBoard.style.display = 'none'
+    })
   }
 
+  /**
+   * Provides an option for the user to start the quiz again
+   * @memberof QuizGameRef
+   */
   onLoss () {
-    console.log('loss')
+    this._hideQuiz()
+    this._showRestart()
     this.removeTimer()
+
+    this.restartBtn.addEventListener('click', event => {
+      this.getQuestion('http://vhost3.lnu.se:20080/question/1')
+      this.getAnswer()
+      this.restartDiv.style.display = 'none'
+    })
+  }
+
+  /**
+   *  Validates the input field if its empty
+   */
+  _validateForm () {
+    const inputVal = this.shadowRoot.querySelector('#username').value
+    if (!inputVal) {
+      this.startBtn.disabled = true
+    } else {
+      this.startBtn.disabled = false
+    }
   }
 
   /**
@@ -315,18 +309,6 @@ export class Refactor extends window.HTMLElement {
   removeTimer () {
     this.timeLeft = 10
     clearTimeout(this.countTime)
-  }
-
-  /**
-   *  Validates the input field if its empty
-   */
-  _validateForm () {
-    const inputVal = this.shadowRoot.querySelector('#username').value
-    if (!inputVal) {
-      this.startBtn.disabled = true
-    } else {
-      this.startBtn.disabled = false
-    }
   }
 
   /**
@@ -375,4 +357,4 @@ export class Refactor extends window.HTMLElement {
   }
 }
 
-window.customElements.define('x-refactor', Refactor)
+window.customElements.define('x-quiz-game-ref', QuizGameRef)
